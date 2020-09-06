@@ -536,6 +536,35 @@ bool Adafruit_PN532::shutDown(bool allowPassiveWake, bool enableIRQ) {
  }
 }
 
+/**************************************************************************/
+/*!
+    @brief  Wakes the module from sleep mode
+
+    @returns  1 if everything is OK, 0 if unable to wake
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::wake(void){
+  if(spi_dev != NULL){
+    // Wake up via spi
+    // TODO This requires manually holding the NSS line low for 2ms before starting a wake command
+    // See page 100 of https://www.nxp.com/docs/en/user-guide/141520.pdf
+    return 0;
+  }
+  else{
+    // Wake up via I2C
+    pn532_packetbuffer[0] = PN532_WAKEUP;
+
+    if (!sendCommandCheckAck(pn532_packetbuffer, 1)) {
+      return 0;
+    }
+
+    return 1;
+  }
+}
+
 /***** ISO14443A Commands ******/
 
 /**************************************************************************/

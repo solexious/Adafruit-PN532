@@ -167,6 +167,7 @@ public:
   uint8_t readGPIO(void);
   bool setPassiveActivationRetries(uint8_t maxRetries);
   bool shutDown(bool allowPassiveWake, bool enableIRQ);
+  bool wake(void);
 
   // ISO14443A functions
   bool readPassiveTargetID(
