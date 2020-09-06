@@ -491,6 +491,51 @@ bool Adafruit_PN532::setPassiveActivationRetries(uint8_t maxRetries) {
   return 1;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Puts the module into sleep mode
+
+    @returns  1 if everything is OK, 0 if unable to shutdown
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::shutDown(bool allowPassiveWake, bool enableIRQ) {
+ pn532_packetbuffer[0] = PN532_COMMAND_POWERDOWN;
+
+ if((allowPassiveWake) && (spi_dev != NULL)){
+  // We are on SPI and want to allow passive wake
+  pn532_packetbuffer[1] =  0x28;
+ }
+ else if(spi_dev != NULL){
+  // We are on SPI and dont want to allow passive wake
+  pn532_packetbuffer[1] =  0x20;
+ }
+ else if(allowPassiveWake){
+  // We are on I2C and want to allow passive wake
+  pn532_packetbuffer[1] =  0x88;
+ }
+ else{
+  // We are on I2C and dont want to allow passive wake
+  pn532_packetbuffer[1] =  0x80;
+ }
+
+ if(enableIRQ){
+  pn532_packetbuffer[2] = 0x01;
+ }
+ else{
+  pn532_packetbuffer[2] = 0x00;
+ }
+
+ if(sendCommandCheckAck(pn532_packetbuffer, 3)){
+   return pn532_packetbuffer[1];
+ }
+ else{
+  return 0;
+ }
+}
+
 /***** ISO14443A Commands ******/
 
 /**************************************************************************/
