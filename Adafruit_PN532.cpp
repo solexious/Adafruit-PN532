@@ -1529,7 +1529,7 @@ uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
 */
 /**************************************************************************/
 
-bool Adafruit_PN532::isLocked(void){
+bool Adafruit_PN532::ntag2xx_IsLocked(void){
   uint8_t success;
   uint8_t data[32];
   memset(data, 0, 4);
