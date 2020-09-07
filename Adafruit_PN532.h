@@ -202,6 +202,7 @@ public:
   uint8_t ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
                                uint8_t dataLen);
   bool ntag2xx_IsLocked(void);
+  bool ntag2xx_EraseUserData(void)
 
   // Help functions to display formatted text
   static void PrintHex(const byte *data, const uint32_t numBytes);

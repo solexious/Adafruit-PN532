@@ -1546,6 +1546,51 @@ bool Adafruit_PN532::ntag2xx_IsLocked(void){
   return 0;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Erases all user data from a card. You must already have checked
+    for a valid card present at the reader before using this function.
+
+    @returns  1 if successful, 0 if not
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::ntag2xx_EraseUserData(void){
+  uint8_t success;
+  uint8_t data[32];
+  memset(data, 0, 4);
+  success = ntag2xx_ReadPage(3, data);
+
+  if(success){
+    if (!((data[0] == 0xE1) && (data[1] == 0x10)))
+    {
+      return 0; // Not a correctly formatted tag
+    }
+    else if(data[3] != 0x00){
+      return 0; // Is a locked tag
+    }
+    else
+    {
+      // Data area size
+      dataLength = data[2]*8;
+      
+      // Erase the old data area
+      for (uint8_t i = 4; i < (dataLength/4)+4; i++) 
+      {
+        memset(data, 0, 4);
+        success = nfc.ntag2xx_WritePage(i, data);
+        if (!success)
+        {
+          return 0;
+        }
+      }
+      return 1;
+  }
+  return 0;
+}
+
 /************** high level communication functions (handles both I2C and SPI) */
 
 /**************************************************************************/
