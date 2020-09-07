@@ -1517,6 +1517,33 @@ uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
   return 1;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Checks if a card has been locked for writing
+
+    @returns  1 if locked, 0 if unlocked
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::isLocked(void){
+  uint8_t success;
+  uint8_t data[32];
+  memset(data, 0, 4);
+  success = ntag2xx_ReadPage(3, data);
+
+  if(success){
+    if(data[3] == 0x00){
+      return 0;
+    }
+    else{
+      return 1;
+    }
+  }
+  return 0;
+}
+
 /************** high level communication functions (handles both I2C and SPI) */
 
 /**************************************************************************/
