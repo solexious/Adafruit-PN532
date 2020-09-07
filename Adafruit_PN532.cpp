@@ -1519,7 +1519,9 @@ uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
 
 /**************************************************************************/
 /*!
-    @brief  Checks if a card has been locked for writing
+    @brief  Checks if a card has been locked for writing, you must already
+    have checked for a valid card present at the reader before using this
+    function.
 
     @returns  1 if locked, 0 if unlocked
 
