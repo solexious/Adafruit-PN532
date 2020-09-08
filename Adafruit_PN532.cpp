@@ -1587,6 +1587,7 @@ bool Adafruit_PN532::ntag2xx_EraseUserData(void){
         }
       }
       return 1;
+    }
   }
   return 0;
 }
