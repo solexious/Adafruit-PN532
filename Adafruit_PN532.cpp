@@ -1548,6 +1548,48 @@ bool Adafruit_PN532::ntag2xx_IsLocked(void){
 
 /**************************************************************************/
 /*!
+    @brief  Checks if a card has been password protected, you must already
+    have checked for a valid card present at the reader before using this
+    function.
+
+    @returns  1 if passworded, 0 if not
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::ntag2xx_IsPassworded(int tagType){
+  uint8_t success;
+  uint8_t data[32];
+  memset(data, 0, 4);
+
+  if(tagType == NTAG213){
+    success = ntag2xx_ReadPage(41, data);
+  }
+  else if(tagType == NTAG215){
+    success = ntag2xx_ReadPage(131, data);
+  }
+  else if(tagType == NTAG216){
+    success = ntag2xx_ReadPage(277, data);
+  }
+  else{
+    return 0;
+  }
+  
+
+  if(success){
+    if(data[3] == 0xFF){
+      return 0;
+    }
+    else{
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/**************************************************************************/
+/*!
     @brief  Erases all user data from a card. You must already have checked
     for a valid card present at the reader before using this function.
 

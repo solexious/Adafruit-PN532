@@ -150,6 +150,10 @@
 #define PN532_GPIO_P34 (4)
 #define PN532_GPIO_P35 (5)
 
+#define NTAG213 (1)
+#define NTAG215 (2)
+#define NTAG216 (3)
+
 class Adafruit_PN532 {
 public:
   Adafruit_PN532(uint8_t clk, uint8_t miso, uint8_t mosi,
@@ -202,6 +206,7 @@ public:
   uint8_t ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
                                uint8_t dataLen);
   bool ntag2xx_IsLocked(void);
+  bool ntag2xx_IsPassworded(uint8_t tagType);
   bool ntag2xx_EraseUserData(void);
   bool ntag2xx_Lock(void);
 
