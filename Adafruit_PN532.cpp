@@ -1592,6 +1592,40 @@ bool Adafruit_PN532::ntag2xx_EraseUserData(void){
   return 0;
 }
 
+/**************************************************************************/
+/*!
+    @brief  Locks card for writing user data. You must already have checked
+    for a valid card present at the reader before using this function.
+
+    @returns  1 if successful, 0 if not
+
+    TODO - Test
+*/
+/**************************************************************************/
+
+bool Adafruit_PN532::ntag2xx_Lock(void){
+  uint8_t success;
+  uint8_t data[32];
+  memset(data, 0, 4);
+  success = ntag2xx_ReadPage(3, data);
+
+  if(success){
+    if (!((data[0] == 0xE1) && (data[1] == 0x10)))
+    {
+      return 0; // Not a correctly formatted tag
+    }
+
+    data[3] = 0xFF;
+
+    success = nfc.ntag2xx_WritePage(3, data);
+    
+    if(success){
+      return 1;
+    }
+  }
+  return 0;
+}
+
 /************** high level communication functions (handles both I2C and SPI) */
 
 /**************************************************************************/
