@@ -1435,8 +1435,7 @@ uint8_t Adafruit_PN532::ntag2xx_WritePage(uint8_t page, uint8_t *data) {
     @returns 1 if everything executed properly, 0 for an error
 */
 /**************************************************************************/
-uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
-                                             uint8_t dataLen) {
+uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url) {
   uint8_t pageBuffer[4] = {0, 0, 0, 0};
 
   // Remove NDEF record overhead from the URI data (pageHeader below)
@@ -1445,78 +1444,175 @@ uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
   // Figure out how long the string is
   uint8_t len = strlen(url);
 
-  // Make sure the URI payload will fit in dataLen (include 0xFE trailer)
-  if ((len < 1) || (len + 1 > (dataLen - wrapperSize)))
-    return 0;
+  if(ntag2xx_ReadPage(3, pageBuffer)){
 
-  // Setup the record header
-  // See NFCForum-TS-Type-2-Tag_1.1.pdf for details
-  uint8_t pageHeader[12] = {
-      /* NDEF Lock Control TLV (must be first and always present) */
-      0x01, /* Tag Field (0x01 = Lock Control TLV) */
-      0x03, /* Payload Length (always 3) */
-      0xA0, /* The position inside the tag of the lock bytes (upper 4 = page
-               address, lower 4 = byte offset) */
-      0x10, /* Size in bits of the lock area */
-      0x44, /* Size in bytes of a page and the number of bytes each lock bit can
-               lock (4 bit + 4 bits) */
-      /* NDEF Message TLV - URI Record */
-      0x03,               /* Tag Field (0x03 = NDEF Message) */
-      (uint8_t)(len + 5), /* Payload Length (not including 0xFE trailer) */
-      0xD1, /* NDEF Record Header (TNF=0x1:Well known record + SR + ME + MB) */
-      0x01, /* Type Length for the record type indicator */
-      (uint8_t)(len + 1), /* Payload len */
-      0x55,               /* Record Type Indicator (0x55 or 'U' = URI Record) */
-      uriIdentifier       /* URI Prefix (ex. 0x01 = "http://www.") */
-  };
+    uint8_t dataLen = pageBuffer[2]*8;
 
-  // Write 12 byte header (three pages of data starting at page 4)
-  memcpy(pageBuffer, pageHeader, 4);
-  if (!(ntag2xx_WritePage(4, pageBuffer)))
-    return 0;
-  memcpy(pageBuffer, pageHeader + 4, 4);
-  if (!(ntag2xx_WritePage(5, pageBuffer)))
-    return 0;
-  memcpy(pageBuffer, pageHeader + 8, 4);
-  if (!(ntag2xx_WritePage(6, pageBuffer)))
-    return 0;
+    // Make sure the URI payload will fit in dataLen (include 0xFE trailer)
+    if ((len < 1) || (len + 1 > (dataLen - wrapperSize)))
+      return 0;
 
-  // Write URI (starting at page 7)
-  uint8_t currentPage = 7;
-  char *urlcopy = url;
-  while (len) {
-    if (len < 4) {
-      memset(pageBuffer, 0, 4);
-      memcpy(pageBuffer, urlcopy, len);
-      pageBuffer[len] = 0xFE; // NDEF record footer
-      if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
-        return 0;
-      // DONE!
-      return 1;
-    } else if (len == 4) {
-      memcpy(pageBuffer, urlcopy, len);
-      if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
-        return 0;
-      memset(pageBuffer, 0, 4);
-      pageBuffer[0] = 0xFE; // NDEF record footer
-      currentPage++;
-      if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
-        return 0;
-      // DONE!
-      return 1;
-    } else {
-      // More than one page of data left
-      memcpy(pageBuffer, urlcopy, 4);
-      if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
-        return 0;
-      currentPage++;
-      urlcopy += 4;
-      len -= 4;
+    // Setup the record header
+    // See NFCForum-TS-Type-2-Tag_1.1.pdf for details
+    uint8_t pageHeader[12] = {
+        /* NDEF Lock Control TLV (must be first and always present) */
+        0x01, /* Tag Field (0x01 = Lock Control TLV) */
+        0x03, /* Payload Length (always 3) */
+        0xA0, /* The position inside the tag of the lock bytes (upper 4 = page
+                 address, lower 4 = byte offset) */
+        0x10, /* Size in bits of the lock area */
+        0x44, /* Size in bytes of a page and the number of bytes each lock bit can
+                 lock (4 bit + 4 bits) */
+        /* NDEF Message TLV - URI Record */
+        0x03,               /* Tag Field (0x03 = NDEF Message) */
+        (uint8_t)(len + 5), /* Payload Length (not including 0xFE trailer) */
+        0xD1, /* NDEF Record Header (TNF=0x1:Well known record + SR + ME + MB) */
+        0x01, /* Type Length for the record type indicator */
+        (uint8_t)(len + 1), /* Payload len */
+        0x55,               /* Record Type Indicator (0x55 or 'U' = URI Record) */
+        uriIdentifier       /* URI Prefix (ex. 0x01 = "http://www.") */
+    };
+
+    // Write 12 byte header (three pages of data starting at page 4)
+    memcpy(pageBuffer, pageHeader, 4);
+    if (!(ntag2xx_WritePage(4, pageBuffer)))
+      return 0;
+    memcpy(pageBuffer, pageHeader + 4, 4);
+    if (!(ntag2xx_WritePage(5, pageBuffer)))
+      return 0;
+    memcpy(pageBuffer, pageHeader + 8, 4);
+    if (!(ntag2xx_WritePage(6, pageBuffer)))
+      return 0;
+
+    // Write URI (starting at page 7)
+    uint8_t currentPage = 7;
+    char *urlcopy = url;
+    while (len) {
+      if (len < 4) {
+        memset(pageBuffer, 0, 4);
+        memcpy(pageBuffer, urlcopy, len);
+        pageBuffer[len] = 0xFE; // NDEF record footer
+        if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
+          return 0;
+        // DONE!
+        return 1;
+      } else if (len == 4) {
+        memcpy(pageBuffer, urlcopy, len);
+        if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
+          return 0;
+        memset(pageBuffer, 0, 4);
+        pageBuffer[0] = 0xFE; // NDEF record footer
+        currentPage++;
+        if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
+          return 0;
+        // DONE!
+        return 1;
+      } else {
+        // More than one page of data left
+        memcpy(pageBuffer, urlcopy, 4);
+        if (!(ntag2xx_WritePage(currentPage, pageBuffer)))
+          return 0;
+        currentPage++;
+        urlcopy += 4;
+        len -= 4;
+      }
+    }
+
+    // Seems that everything was OK (?!)
+    return 1;
+  }
+
+  return 0;
+}
+
+/**************************************************************************/
+/*!
+    Reads an NDEF URI Record and returns the string value
+
+    Note that this function assumes that the NTAG2xx card is
+    already formatted to work as an "NFC Forum Tag".
+
+    @returns 1 if everything executed properly, 0 for an error
+*/
+/**************************************************************************/
+bool Adafruit_PN532::ntag2xx_ReadNDEFString(uint8_t *uriIdentifier, char *buffer, uint8_t bufferLen) {
+  // Get first page to check it matches an ndef header
+  uint8_t success;
+  uint8_t data[4];
+  uint8_t payloadLen;
+
+  memset(data, 0, 4);
+  success = ntag2xx_ReadPage(4, data);
+
+  if(success && (data[0] == 0x01 && data[1] == 0x03 && data[2] == 0xA0)){
+    // First page matches, now check the second
+    memset(data, 0, 4);
+    success = ntag2xx_ReadPage(5, data);
+
+    if(success && (data[1] == 0x03 && data[3] == 0xD1)){
+      // Second page matches, now check third
+      memset(data, 0, 4);
+      success = ntag2xx_ReadPage(6, data);
+
+      if(success && (data[0] == 0x01 && data[2] == 0x55)){
+        // All headers match for a ndef record, get the payload length and uri prefix
+        payloadLen = data[1] - 1;
+        // memset(payloadLen, data[1], 1);
+        memset(uriIdentifier, data[3], 1);
+        //uriIdentifier = data[3];
+
+        if(bufferLen >= payloadLen){
+          // Passed buffer big enough
+          memset(buffer, 0, bufferLen);
+
+          uint8_t currentPage = 7;
+          uint8_t bufferLoc = 0;
+
+          while(payloadLen){
+            memset(data, 0, 4);
+
+            if(payloadLen <= 4){
+              if(!ntag2xx_ReadPage(currentPage, data)){
+                return 0;
+              }
+
+              uint8_t dataPos = 0;
+              while(payloadLen){
+                buffer[bufferLoc] = data[dataPos];
+                bufferLoc++;
+                dataPos++;
+                payloadLen--;
+              }
+
+              return 1;
+            }
+            else if(payloadLen > 4){
+              if(!ntag2xx_ReadPage(currentPage, data)){
+                return 0;
+              }
+
+              uint8_t dataPos = 0;
+              while(dataPos < 4){
+                buffer[bufferLoc] = data[dataPos];
+                bufferLoc++;
+                dataPos++;
+                payloadLen--;
+              }
+
+              currentPage++;
+            }
+          }
+        }
+        else{
+          Serial.println("buffer not big enough");
+          Serial.println(bufferLen);
+          Serial.println(payloadLen);
+        }
+      }
     }
   }
 
-  // Seems that everything was OK (?!)
-  return 1;
+  return 0;
 }
 
 /**************************************************************************/
