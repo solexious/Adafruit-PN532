@@ -1610,7 +1610,7 @@ bool Adafruit_PN532::ntag2xx_IsPassworded(uint8_t tagType){
 
 bool Adafruit_PN532::ntag2xx_EraseUserData(void){
   uint8_t success;
-  uint8_t data[32];
+  uint8_t data[4];
   memset(data, 0, 4);
   success = ntag2xx_ReadPage(3, data);
 
@@ -1625,13 +1625,19 @@ bool Adafruit_PN532::ntag2xx_EraseUserData(void){
     else
     {
       // Data area size
-      dataLength = data[2]*8;
+      // uint8_t dataLength = data[2]*8; TODO Set this progrmatically correctly
+      uint8_t data1[4] = {0x01, 0x03, 0xA0, 0x0C};
+      ntag2xx_WritePage(4, data1);
+      uint8_t data2[4] = {0x34, 0x03, 0x00, 0xFE};
+      ntag2xx_WritePage(5, data2);
+
+      memset(data, 0, 4);
       
       // Erase the old data area
-      for (uint8_t i = 4; i < (dataLength/4)+4; i++) 
+      // for (uint8_t i = 6; i < (dataLength/4)+4; i++) 
+      for (uint8_t i = 6; i < 40; i++) 
       {
-        memset(data, 0, 4);
-        success = nfc.ntag2xx_WritePage(i, data);
+        success = ntag2xx_WritePage(i, data);
         if (!success)
         {
           return 0;
