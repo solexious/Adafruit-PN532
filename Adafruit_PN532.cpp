@@ -1662,7 +1662,7 @@ bool Adafruit_PN532::ntag2xx_EraseUserData(void){
 
 bool Adafruit_PN532::ntag2xx_Lock(void){
   uint8_t success;
-  uint8_t data[32];
+  uint8_t data[4];
   memset(data, 0, 4);
   success = ntag2xx_ReadPage(3, data);
 
