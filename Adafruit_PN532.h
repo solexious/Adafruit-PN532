@@ -203,8 +203,8 @@ public:
   // NTAG2xx functions
   uint8_t ntag2xx_ReadPage(uint8_t page, uint8_t *buffer);
   uint8_t ntag2xx_WritePage(uint8_t page, uint8_t *data);
-  uint8_t ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
-                               uint8_t dataLen);
+  uint8_t ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url);
+  bool ntag2xx_ReadNDEFString(uint8_t *uriIdentifier, char *buffer, uint8_t bufferLen);
   bool ntag2xx_IsLocked(void);
   bool ntag2xx_IsPassworded(uint8_t tagType);
   bool ntag2xx_EraseUserData(void);
