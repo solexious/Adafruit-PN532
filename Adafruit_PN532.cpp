@@ -1533,13 +1533,20 @@ uint8_t Adafruit_PN532::ntag2xx_WriteNDEFURI(uint8_t uriIdentifier, char *url,
 
 bool Adafruit_PN532::ntag2xx_IsLocked(void){
   uint8_t success;
-  uint8_t data[32];
+  uint8_t data[4];
   memset(data, 0, 4);
   success = ntag2xx_ReadPage(3, data);
 
   if(success){
     if(data[3] == 0x00){
-      return 0;
+      memset(data, 0, 4);
+      success = ntag2xx_ReadPage(2, data);
+      
+      if(success){
+        if(data[2] != 0x00 || data[3] != 0x00){
+          return 1;
+        }
+      }
     }
     else{
       return 1;
