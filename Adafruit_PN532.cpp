@@ -542,6 +542,8 @@ bool Adafruit_PN532::shutDown(bool allowPassiveWake, bool enableIRQ) {
 
     @returns  1 if everything is OK, 0 if unable to wake
 
+    Must call SAMConfig() after to re setup the reader
+
     TODO - Test
 */
 /**************************************************************************/
