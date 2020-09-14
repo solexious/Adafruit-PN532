@@ -1672,9 +1672,10 @@ bool Adafruit_PN532::ntag2xx_Lock(void){
       return 0; // Not a correctly formatted tag
     }
 
-    data[3] = 0xFF;
+    memset(data, 0, 4);
+    data[3] = 0x0F;
 
-    success = nfc.ntag2xx_WritePage(3, data);
+    success = ntag2xx_WritePage(3, data);
     
     if(success){
       return 1;
