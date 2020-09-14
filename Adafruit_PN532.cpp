@@ -1567,9 +1567,9 @@ bool Adafruit_PN532::ntag2xx_IsLocked(void){
 */
 /**************************************************************************/
 
-bool Adafruit_PN532::ntag2xx_IsPassworded(int tagType){
+bool Adafruit_PN532::ntag2xx_IsPassworded(uint8_t tagType){
   uint8_t success;
-  uint8_t data[32];
+  uint8_t data[4];
   memset(data, 0, 4);
 
   if(tagType == NTAG213){
